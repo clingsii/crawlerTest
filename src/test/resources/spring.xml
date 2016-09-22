@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
+       default-autowire="byName">
+
+    <bean id="crawlerHttpClient" class="com.lc.crawler.http.CrawlerHttpClient"
+          init-method="init" destroy-method="destroy"/>
+
+    <bean id="crawlerWorker" class="com.lc.crawler.processor.CrawlerWorker" init-method="init">
+        <property name="queueSize" value="10000"/>
+        <property name="threadNum" value="20"/>
+    </bean>
+
+    <bean id="container" class="com.lc.crawler.processor.impl.SimpleContainer" init-method="init"/>
+
+    <bean id="pageStat" class="com.lc.crawler.analyzer.PageStat"/>
+
+    <bean id="PageClassifier" class="com.lc.crawler.analyzer.PageClassifier">
+        <property name="diversityThreshold" value="0.2"/>
+        <property name="numThreshold" value="0.15"/>
+        <property name="detailThreshold" value="0.5"/>
+    </bean>
+
+    <bean id="detailInfoExtractor" class="com.lc.crawler.analyzer.DetailInfoExtractor">
+        <property name="diversityThreshold" value="0.1"/>
+        <property name="numThreshold" value="0.05"/>
+    </bean>
+
+    <bean id="categoryAnalyzer" class="com.lc.crawler.analyzer.CategoryAnalyzer"/>
+
+    <bean id="mContent" class="com.lc.crawler.analyzer.RemoveCommonElements">
+        <property name="numThreshold" value="0.8"/>
+        <property name="diversityThreshold" value="0.0"/>
+    </bean>
+
+    <bean id="categoryService" class="com.lc.crawler.category.CategoryService"/>
+
+    <bean id="simpleExtractor" class="com.lc.crawler.SimpleExtractor"/>
+    <bean id="autoExtractor" class="com.lc.crawler.AutoExtractor"/>
+
+</beans>

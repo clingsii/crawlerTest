@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.viathink.sys.domain.SysDictionary">
+
+    <resultMap id="CategoryMap" type="com.lc.crawler.domain.CategoryDO">
+        <id column="id" property="id"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="gmt_modified" property="gmtModified"/>
+        <result column="cat_id" property="catId"/>
+        <result column="cat_name" property="name"/>
+        <result column="parent_id" property="parent_id"/>
+        <result column="site_id" property="site_id"/>
+    </resultMap>
+
+
+    <select id="query-category-by-id" resultMap="CategoryMap" parameterType="java.util.Map">
+        select
+        id,gmt_create,gmt_modified,cat_id,cat_name,parent_id,site_id
+        from sli_cats
+        where cat_id = #{cat_id}
+            AND site_id = #{site_id}
+            limit 1
+    </select>
+
+    <select id="query-all-categories" resultMap="CategoryMap" parameterType="java.lang.Long">
+        select
+        id,gmt_create,gmt_modified,cat_id,cat_name,parent_id,site_id
+        from sli_cats
+        where site_id = #{site_id}
+    </select>
+
+    <insert id="insert-category" parameterType="com.lc.crawler.domain.PageInfoDO">
+        <![CDATA[
+
+        INSERT INTO sli_cats
+                    (gmt_create,
+                     gmt_modified,
+                     cat_id,
+                     cat_name,
+                     parent_id,
+                     site_id)
+        VALUES     (Now(),
+                    Now(),
+                    #{catId},
+                    #{name},
+                    #{parent_id},
+                    #{site_id}
+                    )
+
+        ]]>
+    </insert>
+
+    <delete id="delete-all-category" parameterType="java.lang.Long">
+        delete from sli_cats where site_id=#{site_id}
+    </delete>
+
+</mapper>

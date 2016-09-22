@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.viathink.sys.domain.SysDictionary">
+
+    <resultMap id="PageInfoMap" type="com.lc.crawler.domain.PageInfoDO">
+        <id column="id" property="id"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="gmt_modified" property="gmtModified"/>
+        <result column="url" property="url"/>
+        <result column="page_type" property="type"/>
+        <result column="page_content" property="content"/>
+        <result column="checksum" property="checksum"/>
+        <result column="features" property="features"/>
+        <result column="site_id" property="siteId"/>
+        <result column="minified_content" property="mContent"/>
+        <result column="cat_id" property="catId"/>
+    </resultMap>
+
+    <!-- query -->
+    <select id="find-pageInfo-by-url" resultMap="PageInfoMap" parameterType="java.lang.String">
+        select
+        id,gmt_create,gmt_modified,url,page_type,page_content,checksum,features,site_id,minified_content,cat_id
+        from sli_page_info
+        where url=#{url}
+        limit 1
+    </select>
+
+    <select id="query-page-info" resultMap="PageInfoMap" parameterType="java.util.Map">
+        select
+        id,gmt_create,gmt_modified,url,page_type,page_content,checksum,features,site_id,minified_content,cat_id
+        from sli_page_info
+        where 1 = 1
+        <if test="type != null">
+            AND page_type = #{type}
+        </if>
+        <if test="siteId != null">
+            AND site_id = #{siteId}
+        </if>
+        <if test="start != null">
+            ORDER by id
+            LIMIT #{start},#{limit}
+        </if>
+    </select>
+
+    <select id="count-pageInfo" resultType="java.lang.Integer" parameterType="com.lc.crawler.domain.PageInfoDO">
+        select count(1) from sli_page_info
+        where 1 = 1
+        <if test="type != null">
+            AND page_type = #{type}
+        </if>
+        <if test="siteId != null">
+            AND site_id = #{siteId}
+        </if>
+    </select>
+
+    <insert id="insert-pageInfo" parameterType="com.lc.crawler.domain.PageInfoDO">
+        <![CDATA[
+
+
+        INSERT INTO sli_page_info
+                    (gmt_create,
+                     gmt_modified,
+                     url,
+                     page_type,
+                     page_content,
+                     checksum,
+                     features,
+                     site_id,
+                     minified_content,
+                     cat_id)
+        VALUES     (Now(),
+                    Now(),
+                    #{url},
+                    #{type},
+                    #{content},
+                    #{checksum},
+                    #{features},
+                    #{siteId},
+                    #{mContent},
+                    #{catId}
+                    )
+
+
+        ]]>
+    </insert>
+
+    <update id="update-pageInfo" parameterType="com.lc.crawler.domain.PageInfoDO">
+        update sli_page_info
+        set
+        gmt_modified=now(),
+        url=#{url},
+        page_type=#{type},
+        page_content=#{content},
+        checksum=#{checksum},
+        features=#{features},
+        site_id=#{siteId},
+        minified_content=#{mContent},
+        cat_id=#{catId}
+        where id = #{id}
+    </update>
+
+</mapper>

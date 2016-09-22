@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xsi:schemaLocation="
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+	"
+       default-autowire="byName">
+
+    <!--use h2 database for testing -->
+    <jdbc:embedded-database id="h2DataSource" type="H2">
+        <jdbc:script location="classpath:schema/sli-cats.sql"/>
+        <jdbc:script location="classpath:schema/sli-page_info.sql"/>
+    </jdbc:embedded-database>
+
+    <!--<bean name="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">-->
+        <!--<property name="driverClassName" value="com.mysql.jdbc.Driver"/>-->
+        <!--<property name="url" value="jdbc:mysql://localhost:3306/mysql"/>-->
+        <!--<property name="username" value="sli_test"/>-->
+        <!--<property name="password" value="123456"/>-->
+    <!--</bean>-->
+    <!---->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="h2DataSource"/>
+        <property name="configLocation" value="classpath:database/sqlMapConfig.xml"/>
+        <property name="mapperLocations" value="classpath:persistence/*.xml"/>
+
+    </bean>
+
+    <!-- SQLSession template -->
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="sqlSessionFactory"/>
+    </bean>
+
+</beans>
