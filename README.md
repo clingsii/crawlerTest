@@ -1,5 +1,16 @@
 This is a simple crawler which is designed to explore eCommerce websites and extract useful product information from them.
 
+
+##Used technologies
+- Java 8
+- JSoup
+- Google http client
+- Spring
+- MyBatis
+- H2/MySQL
+
+
+
 ##System requirements
 
 - Java 8 
