@@ -3,12 +3,12 @@ package com.lc.crawler.analyzer;
 import com.google.api.client.util.Lists;
 import com.google.api.client.util.Maps;
 import com.lc.crawler.dao.CategoryDAO;
+import com.lc.crawler.dao.PageInfoDAO;
 import com.lc.crawler.domain.CategoryDO;
+import com.lc.crawler.domain.Constants;
 import com.lc.crawler.domain.PageInfoDO;
 import com.lc.crawler.domain.PageType;
 import com.lc.crawler.parser.HtmlParser;
-import com.lc.crawler.dao.PageInfoDAO;
-import com.lc.crawler.domain.Constants;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -17,13 +17,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Generate category hierachy and decide which category items belong to
  * to simplify the code. assuming that there will be at most 2 levels (apart of home page)in category hierachy.
  * which is Home -> Level1 -> Level2
- *
+ * <p/>
  * Created by Ling Cao on 2016/8/17.
  */
 public class CategoryAnalyzer {
@@ -81,22 +83,16 @@ public class CategoryAnalyzer {
             });
         });
 
-        String selector = null;
-        int maxNum = 0;
 
         final int catPageSize = listPageInfos.size();
 
-        for (Map.Entry<String, PageStat.Tuple> entry : map.entrySet()) {
-            if (entry.getValue().num == catPageSize) {
-                if (entry.getValue().set.size() > maxNum) {
-                    selector = entry.getKey();
-                    maxNum = entry.getValue().set.size();
-                }
-            }
-        }
+        Stream<Map.Entry<String, PageStat.Tuple>> stream
+                = map.entrySet().stream()
+                .filter(entry -> entry.getValue().num == catPageSize);
 
-        final String selector1 = new String(selector); //to use it in lambda
-
+        String selector = stream.sorted((entry1, entry2) ->
+                entry2.getValue().set.size() - entry1.getValue().set.size())
+                .findFirst().get().getKey();
 
         /**
          * Step 2.
@@ -107,28 +103,24 @@ public class CategoryAnalyzer {
          */
         listPageInfos.forEach(p -> {
             List<String> links = HtmlParser.getUniqueLinks(p.getmContent());
-            String catName = getName(p.getmContent(), selector1);
+            String catName = getName(p.getmContent(), selector);
             catNameMap.put(p.getId(), catName);
             cntMap.put(p.getId(), getCatLinkNum(links, catMap));
             //first iterate, check if the group exists
-            links.forEach(s -> {
-                Long sid = catMap.get(s);
-                if (sid != null) {
-                    Long groupId = idGroupMap.get(sid);
-                    if (groupId != null) {
-                        idGroupMap.put(p.getId(), groupId);
-                    }
-                }
-            });
+            links.stream()
+                    .mapToLong(s -> catMap.get(s))
+                    .filter(Objects::nonNull)
+                    .map(l -> idGroupMap.get(l))
+                    .filter(Objects::nonNull)
+                    .forEach(groupId -> idGroupMap.put(p.getId(), groupId));
+
             //second iterate(if needed), put all id in one group
             if (idGroupMap.get(p.getId()) == null) {
                 idGroupMap.put(p.getId(), p.getId());
-                links.forEach(s -> {
-                    Long sid = catMap.get(s);
-                    if (sid != null) {
-                        idGroupMap.put(sid, p.getId());
-                    }
-                });
+                links.stream()
+                        .mapToLong(s -> catMap.get(s))
+                        .filter(Objects::nonNull)
+                        .forEach(l -> idGroupMap.put(l, p.getId()));
             }
         });
 
@@ -201,9 +193,9 @@ public class CategoryAnalyzer {
         leftCatList.forEach(c -> {
             String content = catContentMap.get(c.getCatId());
             List<String> links = HtmlParser.parseLinks(content);
-            links.forEach(l-> {
+            links.forEach(l -> {
                 PageInfoDO p = pageInfoDAO.findPageInfoByUrl(l);
-                if (p != null && p.getType()== PageType.DETAIL.getType()){
+                if (p != null && p.getType() == PageType.DETAIL.getType()) {
                     p.setCatId(c.getCatId());
                     pageInfoDAO.updatePageInfo(p);
                 }
