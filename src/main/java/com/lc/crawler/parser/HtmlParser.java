@@ -61,32 +61,21 @@ public class HtmlParser {
 
     public static List<String> parseLinks(Document doc) {
         Elements links = doc.select("a[href]");
-        List<String> result = Lists.newArrayList();
-        Iterator<Element> linkIter = links.iterator();
-        while (linkIter.hasNext()) {
-            Element l = linkIter.next();
-            String u = l.attr("href");
-            if (pattern.matcher(u).find()) {
-                continue;
-            }
-            result.add(u);
-        }
-        return result;
+        return links.stream()
+                .map(l -> l.attr("href"))
+                .filter(u -> !pattern.matcher(u).find())
+                .collect(Collectors.toList());
     }
 
     public static List<String> getUniqueLinks(String html) {
         Document doc = Jsoup.parse(html);
         Elements links = doc.select("a[href]");
 
-        List<String> result = Lists.newArrayList();
-
-        for (Element e : links) {
-            String link = e.attr("href");
-            if (!pattern.matcher(link).find() && goodPattern.matcher(link).find()) {
-                result.add(link);
-            }
-        }
-        return result;
+        return links.stream()
+                .map(e -> e.attr("href"))
+                .filter(link -> !pattern.matcher(link).find())
+                .filter(link -> goodPattern.matcher(link).find())
+                .collect(Collectors.toList());
     }
 
     /**
