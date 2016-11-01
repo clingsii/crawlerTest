@@ -1,6 +1,4 @@
 package com.lc.crawler.category;
-
-import com.google.api.client.repackaged.com.google.common.base.Joiner;
 import com.google.api.client.util.Maps;
 import com.lc.crawler.dao.CategoryDAO;
 import com.lc.crawler.domain.CategoryDO;
